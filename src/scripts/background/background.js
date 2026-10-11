@@ -3,10 +3,9 @@ import { handleClick } from "./handle_click.js";
 import { handleContextMenu } from "./handle_context_menus.js";
 
 // Handle messages
-async function handleMessage(message) {
+async function handleMessage(message, sender) {
     // Get active tab id
-    let tabId; 
-    tabId = (await browser.tabs.query({ active: true, currentWindow: true }))[0].id;
+    let tabId = sender.tab.id;
 
     // Question clicks
     if (message.msgType == "question_clicked") {
