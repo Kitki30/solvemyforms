@@ -1,0 +1,65 @@
+{
+    "version": "0.1",
+    "short_name": "SolveMyforms",
+    "name": "Solve my forms for Firefox",
+    "description": "Solves google forms and some claude generated tests with Gemini AI for you.",
+    "author": "Kitki30",
+    "permissions": [
+        "storage",
+        "scripting"
+    ],
+    "host_permissions": [
+        "https://docs.google.com/*",
+        "https://claude.ai/artifact/*",
+        "https://*.googleapis.com/*"
+    ],
+    "action": {
+        "default_popup": "ui/ui.html"
+    },
+    "options_ui": {
+        "page": "ui/ui.html",
+        "open_in_tab": true
+    },
+    "content_scripts": [
+        {
+            "matches": [
+                "http://*/*",
+                "https://*/*"
+            ],
+            "js": [
+                "scripts/content_scripts/context_menu.js",
+                "scripts/content_scripts/popup_listener.js"
+            ]
+        },
+        {
+            "matches": ["https://docs.google.com/forms/*"],
+            "js": ["scripts/content_scripts/gforms.js"]
+        },
+        {
+            "matches": [
+                "https://*.frame.claudeusercontent.com/*"
+            ],
+            "js": ["scripts/content_scripts/claude.js"],
+            "all_frames": true
+        }
+    ],
+    "background": {
+        "scripts": ["scripts/background/background.js"],
+        "type": "module"
+    },
+    "browser_specific_settings": {
+        "gecko": {
+            "id": "solvemyformsext@kitki30.com",
+            "data_collection_permissions": {
+                "required": [
+                    "websiteContent"
+                ]
+            },
+            "strict_min_version": "140.0"
+        },
+        "gecko_android": {
+            "strict_min_version": "142.0"
+        }
+    },
+    "manifest_version": 3
+}

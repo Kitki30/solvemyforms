@@ -1,0 +1,87 @@
+html, body {
+    width: 550px;
+}
+
+body {
+    font-family: Arial, Helvetica, sans-serif;
+    text-align: center;
+    background-color: black;
+    color: white;
+}
+
+h1 {
+    margin: 10px;
+}
+
+.tip {
+    color: gray;
+    text-align: left;
+    margin-left: 10px;
+    margin-right: 10px;
+}
+
+.popup {
+    display: none;
+    color: rgb(30, 30, 30);
+    font-size: large;
+    font-weight: 600;
+    padding: 1px;
+    margin: 15px;
+    border-radius: 20px;
+    background-color: rgb(187, 157, 22);
+}
+
+.extension-desc {
+    margin-top: 0px;
+}
+
+.setting-text {
+    margin-top: 5px;
+}
+
+.settings-main-cont {
+    color: rgb(233, 233, 233);
+    padding: 10px;
+    margin: 15px;
+    border-radius: 20px;
+    background-color: rgb(25, 25, 25);
+}
+
+.setting-names {
+    margin-top: 15px;
+    margin-bottom: 0px;
+}
+
+.setting-desc {
+    margin-top: 2px;
+    padding-top: 2px;
+}
+
+.settings-category-cont {
+    padding: 10px;
+    margin: 15px;
+    border-radius: 20px;
+    background-color: rgb(20, 20, 20);
+}
+
+.settings-entry-cont {
+    padding: 15px;
+    margin: 15px;
+    border-radius: 20px;
+    background-color: rgb(15, 15, 15);
+}
+
+.settings-sub-entry {
+    padding: 5px;
+}
+
+footer {
+    padding: 10px;
+    margin: 15px;
+    border-radius: 20px;
+    background-color: rgb(10, 10, 10);
+}
+
+#gemini-status-text {
+    color: red; 
+}

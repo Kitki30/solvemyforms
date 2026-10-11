@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>Solve my forms settings</title>
+        <link rel="stylesheet" href="ui.css"/>
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    </head>
+    <body>
+        <h1>Solve my forms</h1>
+        <h4 class="extension_desc">Pass all exams</h4>
+
+        <!--Popups-->
+        <div class="popup" id="popup">
+            <p>Gemini API key not set! Please set it in "Gemini API Key" section.</p>
+        </div>
+
+        <!--How to use-->
+        <div class="settings-main-cont">
+            <h2 class="setting-text">How to use</h2>
+        
+            <h4 style="text-align: left; margin-left: 10px; margin-block: 0px;">Test mode:</h4>
+            <ol style="text-align: left; margin-top: 2px; margin-right: 10px;">
+                <li>Open your form/test like you normally would.</li>
+                <li>If you want to get question solved with AI, double click that question.</li>
+                <li>Wait until it generates, could take up to 30 seconds on smarter models. (You can still generate answers for other questions in the same time)</li>
+                <li>Done! Question selects or types itself.</li>
+            </ol>
+
+            <h4 style="text-align: left; margin-left: 10px; margin-block: 0px;">Manual mode:</h4>
+            <ol style="text-align: left; margin-top: 2px; margin-right: 10px;">
+                <li>Open any website.</li>
+                <li>If you want to ask AI about something, select some text, right click, and press "Ask Gemini AI" option.</li>
+                <li>Wait until it generates, could take up to 30 seconds on smarter models.</li>
+                <li>Done! Answer will show up in popup window at the bottom of the page. To close it - double click it.</li>
+            </ol>
+            <p style="color: orange;"><b>Make sure you set up your Gemini API key first!</b></p>
+        </div>
+
+        <!--Settings-->
+        <div class="settings-main-cont">
+            <h2 class="setting-text">Settings</h2>
+
+            <!--App switches-->
+            <div class="settings-category-cont">
+                <h3>Master switch</h3>
+                <input type="checkbox" id="whitelist-gforms-checkbox" checked> Enable extension</input>
+
+                <h3>Forms whitelist</h3>
+                <input type="checkbox" id="whitelist-gforms-checkbox" checked> Google Forms</input>
+                <br>
+                <input type="checkbox" id="whitelist-claude-checkbox" checked> Claude user artifacts*</input>
+                <p class="tip">
+                    Websites that are not whitelisted here will not be handled by the extension. (Except for manual mode)
+                    <br>
+                    *Claude generates it's form source code with AI, without any consistant class naming.
+                    This extension can only try to guess proper class names,
+                    so it can sometimes stop working on some tests.
+                </p>
+            </div>
+
+            <!--Gemini settings-->
+            <div class="settings-category-cont">
+                <h3>Gemini API</h3>
+
+                <!--Api key settings-->
+                <div class="settings-entry-cont">
+                    <h4 class="setting-names">Gemini API Key</h4>
+                    <p class="setting-desc">
+                        Status: 
+                        <span id="gemini-status-text">API Key not set</span>
+                    </p>
+
+                    <input id="gemini-api-key-input" type="password" placeholder="Enter your api key here"/>
+                    <button id="gemini-api-key-save-btn">Save</button>
+                    <button id="gemini-api-key-clear-btn">Clear</button>
+                    <p>
+                        Obtain your API key on 
+                        <a href="https://aistudio.google.com/api-keys">https://aistudio.google.com/api-keys</a>
+                    </p>
+                </div>
+
+                <!--Model settings-->
+                <div class="settings-entry-cont">
+                    <h4>Gemini model settings</h4>
+                    <div class="settings-sub-entry">
+                        <label for="model-speed-dropdown">Generation mode:</label>
+                        <select id="model-speed-dropdown">
+                            <option value="faster">Faster</option>
+                            <option value="smarter">Smarter</option>
+                        </select>
+                        <p style="margin-top: 2px;">
+                            Faster (default) - Uses last successful model
+                            <br>
+                            Smarter - Always iterates through full model list*
+                            <br>
+                            <span class="tip">
+                                *5 times slower, can use the same model as "Faster" option if other models not available
+                            </span>
+                        </p>
+                    </div>
+                    <div class="settings-sub-entry">
+                        <input type="checkbox" id="model-debug-checkbox"> Use fastest model possible*</input>
+                        <br>
+                        <input type="checkbox" id="model-smarter-checkbox"> Unlock smarter models**</input>
+                        <p class="tip">
+                            *Use only for debug or if low on tokens, will allways use gemini-3.5-flash-lite
+                            <br>
+                            **Smarter models like gemini-3.7-flash and gemini-3.8-flash are normally not used in this extensions because they are mostly unavailable on free APIs,
+                            use it if you want slower, but smarter replies.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <footer>
+            <p style="padding: 10px; margin-bottom: 0; padding-bottom: 0;">
+                Made by Kitki30, distributed on AGPL v3.0 license.
+                <br>
+                View sources at 
+                <a href="https://github.com/kitki30/solvemyforms">https://github.com/kitki30/solvemyforms</a>
+            </p>
+            <p class="tip">
+                This extension doesn't collect telemetry, 
+                but Google Gemini can use your prompts
+                (which may include form name, question and available answers with their DOM IDs)
+                for training.
+                For more information see their privacy policy.
+            </p>
+            <p class="tip">
+                All trademarks, logos, brand names, 
+                and other intellectual property mentioned or displayed 
+                are used solely for identification and informational purposes. 
+                All trademarks remain the property of their respective owners. 
+                No affiliation, sponsorship, endorsement, or ownership is implied.
+            </p>
+        </footer>
+    
+        <script src="ui.js"></script>
+    </body>
+</html>
