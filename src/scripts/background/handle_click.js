@@ -40,6 +40,35 @@ export async function handleClick(message, tabId) {
 
     // Send AIs response to content script
     if (!response.error) {
+        // Check if not errored out in response
+        if ([
+            "\\NOANSWER\\",
+            "\\AMBIGOUS\\",
+            "\\SAFETY\\",
+            "\\LANGUAGE\\",
+            "\\USERPREFER\\",
+            "\\OTHER\\"
+        ].includes(response.response)) {
+            let errorMsg = "AI response error (In output)";
+
+            // TODO: Rewrite this to switch
+            if (response.response == "\\NOANSWER\\") errorMsg = "AI thinks this question has no answer.";
+            if (response.response == "\\AMBIGOUS\\") errorMsg = "AI thinks this question is ambigous.";
+            if (response.response == "\\SAFETY\\") errorMsg = "Cannot respond - safety related issue.";
+            if (response.response == "\\LANGUAGE\\") errorMsg = "AI could not determine the language of this question.";
+            if (response.response == "\\USERPREFER\\") errorMsg = "AI thinks this question depends on your preferences.";
+        
+            browser.tabs.sendMessage(
+                tabId,
+                {
+                    msgType: "popup",
+                    msg: errorMsg,
+                    color: "red",
+                    textColor: "black"
+                }
+            )
+        }
+
         // Single select answers
         if (type == "single-select") {
             browser.tabs.sendMessage(
