@@ -70,10 +70,10 @@ function resolveQuestion(question) {
     // Fallback to aria check if not found by class
     if (questionText.length != 1) {
         console.warn("Question text not found by class! Falling back to aria check");
-        questionText = question.querySelector(`[role=${questionRole}] [aria-level=${questionAria}]`);
+        questionText = [question.querySelector(`[role=${questionRole}] [aria-level=${questionAria}]`)];
         
         // If still not found, throw an error and return null
-        if (!questionText) {
+        if (questionText.length != 1) {
             console.warn("Question text element not found!");
             return { error: true }
         }
@@ -124,7 +124,7 @@ function resolveQuestion(question) {
     // Resolve elements - Text inputs
     const answersShortText = question.getElementsByClassName(answerShortTextInputClass);
     const answersLongText = question.getElementsByClassName(answerLongTextInputClass);
-    if (answersShortText.length != 0 | answersLongText.length != 0) {
+    if (answersShortText.length != 0 || answersLongText.length != 0) {
         // Check item type
         let item;
         let type;

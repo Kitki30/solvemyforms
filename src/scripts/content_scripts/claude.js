@@ -40,7 +40,7 @@ function getQuestions() {
 function resolveQuestion(question) {
     let questionText = question.getElementsByClassName(questionClass);
 
-    if (!questionText) {
+    if (questionText.length != 0) {
         console.warn("Question text element not found!");
         return { error: true }
     }
