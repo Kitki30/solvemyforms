@@ -6,7 +6,8 @@ echo "By @Kitki30"
 cp ./LICENSE ./src/LICENSE
 
 # Zip it
-zip -r ./extension.xpi ./src/*
+cd src
+zip -r ../extension.xpi ./*
 
 # Done
 echo "Done"
