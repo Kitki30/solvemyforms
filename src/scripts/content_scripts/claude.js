@@ -7,7 +7,7 @@
  * These are only my predictions from what i've seen, as claude generated the code every quiz and doesn't use any frameworks.
  * Theese seem to persist after few generations.
  * 
- * TODO: Change them to arrays for faster detection
+ * TODO: Change them to arrays for better detection
  * I've also have seen that claude likes to store questions and their answers in Q/Q100 variable in javascript, so we can extract it from that in future.
 */
 
