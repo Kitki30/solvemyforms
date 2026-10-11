@@ -107,7 +107,7 @@ export async function sendPrompt(apiKey, input, { model=null, smarter=false, unl
 
         // Check if errored out
         if (response.status != 200) {
-            // Error 400 - Unauthorized
+            // Error 400 - Unauthorized (Invalid api key)
             if (response.status == 400) {
                 return { 
                     error: true,
@@ -120,7 +120,7 @@ export async function sendPrompt(apiKey, input, { model=null, smarter=false, unl
                 console.log("Model has high demand! Skipping...");
                 
                 // Return if last model on the list
-                if ((i - 1) == usedModels.length) {
+                if (i == usedModels.length) {
                     return {
                         error: true,
                         error_msg: "No models are currently free",
@@ -134,7 +134,7 @@ export async function sendPrompt(apiKey, input, { model=null, smarter=false, unl
                 console.log("Model ratelimitted");
 
                 // Return if last model on the list
-                if ((i - 1) == usedModels.length) {
+                if (i == usedModels.length) {
                     return {
                         error: true,
                         error_msg: "All models rate limitted",
@@ -144,11 +144,11 @@ export async function sendPrompt(apiKey, input, { model=null, smarter=false, unl
                 continue;
             }
             // Error 404 - Model not found
-            else if (response.status == 429) {
-                console.log("Model ratelimitted");
+            else if (response.status == 404) {
+                console.log("Model not found");
 
                 // Return if last model on the list
-                if ((i - 1) == usedModels.length) {
+                if (i == usedModels.length) {
                     return {
                         error: true,
                         error_msg: "Model not found",
