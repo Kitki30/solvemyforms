@@ -8,12 +8,10 @@ const modelsFull = [
     "gemini-3.8-flash",
     "gemini-3.7-flash",
     "gemini-3.6-flash",
-    "gemini-3.5-flash",
     "gemini-3.5-flash-lite"
 ]
 const models = [
     "gemini-3.6-flash",
-    "gemini-3.5-flash",
     "gemini-3.5-flash-lite"
 ]
 const apiURL = "https://generativelanguage.googleapis.com/v1beta";
