@@ -11,10 +11,10 @@
  * I've also have seen that claude likes to store questions and their answers in Q/Q100 variable in javascript, so we can extract it from that in future.
 */
 
-const questionContainerClass = "q"; // Class of whole question container
-const questionClass = "qt"; // Question 'div' tag class
+const questionContainerClasses = ["q", "question", "question-container", "question_container"]; // Classes of whole question container
+const questionClasses = ["qt", "qtext", "questiontext", "question__text"]; // Question 'div' tag classes
 
-const optionClass = "opt"; // Only single select questions seem to exists while generating quizes, they seem to use 'opt' tags without IDs
+const optionClasses = ["opt", "option", "answer", "question__option", "question__opt"]; // Only single select questions seem to exists while generating quizes, they mostly use 'opt' class, others are my toughts
 
 // Script
 let questionQueue = [];
@@ -30,17 +30,29 @@ function getFormName() {
  * Gets all questions
 */
 function getQuestions() {
-    const questions = document.getElementsByClassName(questionContainerClass);
-    return questions;
+    for (let i = 0; i < questionContainerClasses.length; i++) {
+        const questions = document.getElementsByClassName(questionContainerClasses[i]);
+        
+        if (questions.length != 0) return questions;
+    }
+    return null;
 }
 
 /*
  * Resolves question items
 */
 function resolveQuestion(question) {
-    let questionText = question.getElementsByClassName(questionClass);
+    let questionText;
+    for (let i = 0; i < questionClasses.length; i++) {
+        questionText = question.getElementsByClassName(questionClasses[i]);
 
-    if (questionText.length != 0) {
+        if (questionText.length != 1) {
+            continue;
+        }
+        break;
+    }
+
+    if (questionText.length != 1) {
         console.warn("Question text element not found!");
         return { error: true }
     }
@@ -51,31 +63,33 @@ function resolveQuestion(question) {
     let answers = [];
 
     // Resolve elements - Single/Multi selects
-    const answersSingle = question.getElementsByClassName(optionClass);
-    if (answersSingle.length != 0) {
-        // Iterate through possible answers
-        for (let i = 0; i < answersSingle.length; i++) {
-            // Assign ID as it doesnt seem that they have it assigned (in generated code)
-            if (!answersSingle[i].id) answersSingle[i].id = Math.random().toString();
+    for (let i = 0; i < optionClasses.length; i++) {
+        const answersSingle = question.getElementsByClassName(optionClasses[i]);
+        if (answersSingle.length != 0) {
+            // Iterate through possible answers
+            for (let i = 0; i < answersSingle.length; i++) {
+                // Assign ID as it doesnt seem that they have it assigned (in generated code)
+                if (!answersSingle[i].id) answersSingle[i].id = Math.random().toString();
 
-            const item = answersSingle[i];
-            const id = item.id;
-            const answerName = item.textContent;
-            
-            answers.push(
-                {
-                    id: id,
-                    answerName: answerName
-                }
-            )
-        };
+                const item = answersSingle[i];
+                const id = item.id;
+                const answerName = item.textContent;
+                
+                answers.push(
+                    {
+                        id: id,
+                        answerName: answerName
+                    }
+                )
+            };
 
-        return {
-            error: false,
-            questionText: questionText,
-            answers: answers,
-            type: "single-select"
-        };
+            return {
+                error: false,
+                questionText: questionText,
+                answers: answers,
+                type: "single-select"
+            };
+        }
     }
 
     console.warn("Couldn't find any answer elems!")
@@ -137,16 +151,32 @@ function onMessageCallback(message) {
 browser.runtime.onMessage.addListener(onMessageCallback);
 
 // Subcribe to onclick event for all questions
+// TODO: change 'questionSpan' name to something else, it can be something else than span
 const questions = getQuestions();
 for (let i = 0; i < questions.length; i++) {
-    const questionSpan = questions[i].getElementsByClassName(questionClass);
+    console.debug("Checking question", questions[i]);
 
+    // Iterate through possible classes
+    let questionSpan;
+    for (let j = 0; j < questionClasses.length; j++) {
+        console.debug("Checking class", questionClasses[j]);
+        questionSpan = questions[i].getElementsByClassName(questionClasses[j]);
+
+        console.debug("Question texts:", questionSpan);
+        if (questionSpan.length != 1) {
+            console.debug("Didn't find anything with this class :(");
+            continue;
+        }
+        break;
+    }
+
+    // If nothing found in all of the classes, surrender
     if (questionSpan.length != 1) {
         console.warn("No questions found");
         continue;
-    } 
+    }
 
     questionSpan[0].addEventListener("dblclick", () => {sendQuestionCallback(questions[i])});
     console.log("Added question double click listener");
 }
-console.log("Init done")
+console.log("[Solve my forms] Init done")
