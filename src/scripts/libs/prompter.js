@@ -48,7 +48,7 @@ export async function sendPrompt(apiKey, input, { model=null, smarter=false, unl
     let startingIndex = 0;
 
     // Try to use lastSuccessModel for index if smarter flag is false
-    if (!smarter) {
+    if (!smarter && model == null) {
         // Use lastSuccessModel for index if not expired
         if (generationCount < 5 && Date.now() < (lastResetTime + (30 * 60 * 1000)) && lastUnlocked == unlocked) { 
             if (lastSuccessModel) {
@@ -120,7 +120,7 @@ export async function sendPrompt(apiKey, input, { model=null, smarter=false, unl
                 console.log("Model has high demand! Skipping...");
                 
                 // Return if last model on the list
-                if (i == usedModels.length) {
+                if (i + 1 == usedModels.length) {
                     return {
                         error: true,
                         error_msg: "No models are currently free",
@@ -134,7 +134,7 @@ export async function sendPrompt(apiKey, input, { model=null, smarter=false, unl
                 console.log("Model ratelimitted");
 
                 // Return if last model on the list
-                if (i == usedModels.length) {
+                if (i + 1 == usedModels.length) {
                     return {
                         error: true,
                         error_msg: "All models rate limitted",
@@ -148,7 +148,7 @@ export async function sendPrompt(apiKey, input, { model=null, smarter=false, unl
                 console.log("Model not found");
 
                 // Return if last model on the list
-                if (i == usedModels.length) {
+                if (i + 1 == usedModels.length) {
                     return {
                         error: true,
                         error_msg: "Model not found",
