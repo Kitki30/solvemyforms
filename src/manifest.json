@@ -1,9 +1,16 @@
 {
-    "version": "0.3",
+    "version": "0.4",
     "short_name": "SolveMyforms",
     "name": "Solve my forms for Firefox",
     "description": "Solves google forms and some claude generated tests with Gemini AI for you.",
     "author": "Kitki30",
+    "icons": {
+        "16": "assets/logo_16.png",
+        "32": "assets/logo_32.png",
+        "48": "assets/logo_48.png",
+        "128": "assets/logo_128.png",
+        "256": "assets/logo_256.png"
+    },
     "permissions": [
         "storage",
         "contextMenus"

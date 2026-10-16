@@ -30,6 +30,7 @@
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "dependencies": {
+    "sharp-cli": "^6.1.0",
     "web-ext": "^10.8.0"
   }
 }
