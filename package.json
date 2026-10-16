@@ -26,6 +26,7 @@
   "scripts": {
     "lint": "web-ext lint -s src",
     "build": "cp LICENSE src/LICENSE && web-ext build -s src --overwrite-dest",
+    "start": "web-ext run -s src",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "dependencies": {
