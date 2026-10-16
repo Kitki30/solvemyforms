@@ -33,7 +33,7 @@ let lastUnlocked = (sessionStorage.getItem("geminiLastUnlocked") === "true"); //
  *  - false - Sends requests with priority to model that succeded generation before (To speed up gen if other ones are unavailable)
  * unlocked - uses modelsFull instead of models list
 */
-export async function sendPrompt(apiKey, input, { model=null, smarter=false, unlocked=false }) {
+export async function sendPrompt(apiKey, input, { model=null, thinkingLevel=null, smarter=false, unlocked=false }) {
     // Define models used for this generation
     let usedModels;
     if (model) {
@@ -69,6 +69,12 @@ export async function sendPrompt(apiKey, input, { model=null, smarter=false, unl
         }
     }
 
+    // Define thinking level
+    let thinkingLevelInternal = "THINKING_LEVEL_UNSPECIFIED"; // Default for model
+    if (thinkingLevelInternal) {
+        thinkingLevelInternal = thinkingLevel;
+    }
+
     // Increase generation counter and set timestamp of last generation
     generationCount++;
     sessionStorage.setItem("geminiGenCount", generationCount);
@@ -100,7 +106,13 @@ export async function sendPrompt(apiKey, input, { model=null, smarter=false, unl
                                 }
                             ]
                         }
-                    ]
+                    ],
+                    "generationConfig": {
+                        "thinkingConfig": {
+                            "includeThoughts": true,
+                            "thinkingLevel": thinkingLevelInternal
+                        }
+                    }
                 })
             }
         )
@@ -172,10 +184,24 @@ export async function sendPrompt(apiKey, input, { model=null, smarter=false, unl
         sessionStorage.setItem("geminiLastSuccess", lastSuccessModel);
         console.log("Generation succeded with model", modelName)
 
-        const response_text = (await response.json()).candidates[0].content.parts[0].text;
+        const json = await response.json();
+        const parts = json.candidates[0].content.parts;
+        let responseText;
+
+        // Iterate through parts until normal text found
+        for (let j = 0; j < parts.length; j++) {
+            if (parts[j].thought == true) {
+                console.debug("AI thought:\n" + parts[j].text);
+            }  else {
+                responseText = parts[j].text;
+                console.debug("AI response:\n" + responseText);
+                break;
+            }
+        }
+
         return {
             error: false,
-            response: response_text,
+            response: responseText,
             model: modelName
         };
     }

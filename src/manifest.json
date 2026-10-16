@@ -1,5 +1,5 @@
 {
-    "version": "0.2",
+    "version": "0.3",
     "short_name": "SolveMyforms",
     "name": "Solve my forms for Firefox",
     "description": "Solves google forms and some claude generated tests with Gemini AI for you.",

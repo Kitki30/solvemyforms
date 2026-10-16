@@ -18,6 +18,7 @@ const optionClasses = ["opt", "option", "answer", "question__option", "question_
 
 // Script
 let questionQueue = [];
+let initDone = false;
 
 /*
  * Gets form name from title tag, as it can change
@@ -133,7 +134,7 @@ async function sendQuestionCallback(question) {
 */
 function onMessageCallback(message) {
     // Radio buttons / checkbox selector
-    if (message.msgType == "select_radio") {
+    if (message.msgType == "select_radio" && initDone) {
         console.log("Got click message from background script");
         const radio = document.getElementById(message.msg);
 
@@ -144,39 +145,51 @@ function onMessageCallback(message) {
 
         // Click it
         radio.click();
+    } else if (message.msgType == "init" && !initDone) {
+        init();
+    } 
+}
+
+// Init on message from bg script (to check whitelists)
+async function init() {
+    // Subcribe to onclick event for all questions
+    // TODO: change 'questionSpan' name to something else, it can be something else than span
+    const questions = getQuestions();
+    for (let i = 0; i < questions.length; i++) {
+        console.debug("Checking question", questions[i]);
+
+        // Iterate through possible classes
+        let questionSpan;
+        for (let j = 0; j < questionClasses.length; j++) {
+            console.debug("Checking class", questionClasses[j]);
+            questionSpan = questions[i].getElementsByClassName(questionClasses[j]);
+
+            console.debug("Question texts:", questionSpan);
+            if (questionSpan.length != 1) {
+                console.debug("Didn't find anything with this class :(");
+                continue;
+            }
+            break;
+        }
+
+        // If nothing found in all of the classes, surrender
+        if (questionSpan.length != 1) {
+            console.warn("No questions found");
+            continue;
+        }
+
+        questionSpan[0].addEventListener("dblclick", () => {sendQuestionCallback(questions[i])});
+        console.log("Added question double click listener");
     }
+ 
+   console.log("[Solve my forms] Init done")   
 }
 
 // Subscribe to messages
 browser.runtime.onMessage.addListener(onMessageCallback);
 
-// Subcribe to onclick event for all questions
-// TODO: change 'questionSpan' name to something else, it can be something else than span
-const questions = getQuestions();
-for (let i = 0; i < questions.length; i++) {
-    console.debug("Checking question", questions[i]);
-
-    // Iterate through possible classes
-    let questionSpan;
-    for (let j = 0; j < questionClasses.length; j++) {
-        console.debug("Checking class", questionClasses[j]);
-        questionSpan = questions[i].getElementsByClassName(questionClasses[j]);
-
-        console.debug("Question texts:", questionSpan);
-        if (questionSpan.length != 1) {
-            console.debug("Didn't find anything with this class :(");
-            continue;
-        }
-        break;
-    }
-
-    // If nothing found in all of the classes, surrender
-    if (questionSpan.length != 1) {
-        console.warn("No questions found");
-        continue;
-    }
-
-    questionSpan[0].addEventListener("dblclick", () => {sendQuestionCallback(questions[i])});
-    console.log("Added question double click listener");
-}
-console.log("[Solve my forms] Init done")
+// Send ready message to background script (to check whitelists)
+browser.runtime.sendMessage({
+    msgType: "ready",
+    scriptName: "claude"
+});

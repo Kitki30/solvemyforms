@@ -1,4 +1,5 @@
 // Content script for Solve my exams, injected into google forms
+// TODO: Check this thing one more time after feature drop and rewrite a bit.
 
 /*
  * Class names
@@ -21,8 +22,14 @@ const answerCheckboxClass = "uVccjd aiSeRd FXLARc wGQFbe BJHAP oLlshd"; // Answe
 const answerShortTextInputClass = "whsOnd zHQkBf"; // Answer short text input class
 const answerLongTextInputClass = "KHxj8b tL9Q4c"; // Answer long text input class
 
+const dropdownFakeListClass = "ry3kXd"; // Dropdowns "fake" hidden list that just opens the dropdown
+const dropdownListClass = "OA0qNb ncFHed QXL7Te"; // Thats the correct one, but appears only after oppening the dropdown
+const answerDropdownClass = "MocG8c HZ3kWc mhLiyf OIC90c LMgvRb"; // Answer dropdown option class
+
+
 // Script
 let questionQueue = []; // Question queue to not waste tokens multiple times
+let initDone = false;
 
 /*
  * Gets form name by:
@@ -65,12 +72,16 @@ function getQuestions() {
  * Resolves question items
 */
 function resolveQuestion(question) {
+    // Assign ID to the question
+    if (!question.id) question.id = Math.random().toString();
+
+    // Find question text
     let questionText = question.getElementsByClassName(questionClass);
 
     // Fallback to aria check if not found by class
     if (questionText.length != 1) {
         console.warn("Question text not found by class! Falling back to aria check");
-        questionText = [question.querySelector(`[role=${questionRole}] [aria-level=${questionAria}]`)];
+        questionText = [question.querySelector(`[role=${questionRole}][aria-level=${questionAria}]`)];
         
         // If still not found, throw an error and return null
         if (questionText.length != 1) {
@@ -147,8 +158,54 @@ function resolveQuestion(question) {
         }
     }
 
+    // Resolve elements - Dropdowns
+    const dropdownFakeOptsContainers = question.getElementsByClassName(dropdownFakeListClass); // Detect dropdowns
+    console.debug(dropdownFakeOptsContainers);
+    if (dropdownFakeOptsContainers.length != 0) {
+
+        // Iterate through answers (fake elements)
+        const answersDropdown = dropdownFakeOptsContainers[0].getElementsByClassName(answerDropdownClass); // Fake and real options have the same classes
+        let answers = [];
+        let openId = ""; // ID of first dropdown element, to open the dropdown.
+        if (!answersDropdown[0].id) answersDropdown[0].id = Math.random().toString(); // Assign ID as dropdown options don't have them
+        openId = answersDropdown[0].id;
+
+        for (let i = 0; i < answersDropdown.length; i++) {
+            const answer = answersDropdown[i];
+
+            answers.push({
+                answerName: answer.attributes.getNamedItem("data-value").nodeValue
+            });
+        }
+
+        return {
+            error: false,
+            questionText: questionText,
+            questionId: question.id,
+            openId: openId,
+            answers: answers,
+            type: "dropdown"
+        }
+    }
+
     console.warn("Couldn't find any answer elems!")
     return { error: true }
+}
+
+/*
+ * Deselect multi-select questions
+ * To not mix already selected answers with AIs answers
+*/
+function deselectAnswers(question) {
+    for (let i = 0; i < question.answers.length; i++) {
+        const answerId = question.answers[i].id;
+        const answerCheckbox = document.getElementById(answerId);
+
+        // Deselect only selected
+        if (answerCheckbox.attributes.getNamedItem("aria-checked").nodeValue == "true") {
+            answerCheckbox.click();
+        }
+    }
 }
 
 /*
@@ -170,6 +227,10 @@ async function sendQuestionCallback(question) {
         }
 
         questionQueue.push(questionResolved); // Push question to the queue
+
+        // Deselect already selected answers if multi-select type
+        if (questionResolved.type == "multi-select") deselectAnswers(questionResolved);
+
         browser.runtime.sendMessage(
             {
                 msgType: "question_clicked",
@@ -185,9 +246,9 @@ async function sendQuestionCallback(question) {
 /*
  * Callback for messages
 */
-function onMessageCallback(message) {
+async function onMessageCallback(message) {
     // Radio buttons / checkbox selector
-    if (message.msgType == "select_radio") {
+    if (message.msgType == "select_radio" && initDone) {
         console.log("Got click message from background script");
         const radio = document.getElementById(message.msg);
 
@@ -202,7 +263,7 @@ function onMessageCallback(message) {
         }
     }
     // Text inputs
-    else if (message.msgType == "insert_text") {
+    else if (message.msgType == "insert_text" && initDone) {
         console.log("Got insert text message from background script");
         const input = document.querySelector(`[aria-labelledby="${message.elementId}"]`);
 
@@ -215,23 +276,77 @@ function onMessageCallback(message) {
         input.select();
         document.execCommand("insertText", false, message.msg); // Do it like this or jscontroller (or something) wont see it and ignore it
     }
+    // Dropdowns
+    else if (message.msgType == "select_dropdown" && initDone) {
+        console.log("Got click message from background script");
+
+        const question = document.getElementById(message.questionId);
+        if (!question) {
+            console.warn("Couldn't find question!");
+            return;
+        }
+
+        const dropdownOpener = question.querySelector(`#${CSS.escape(message.openId)}`);
+
+        if (!dropdownOpener) {
+            console.warn("Couldn't find dropdown opener");
+            return;
+        }
+        
+        // Check if already open (using role attr that disapears when open)
+        if (dropdownOpener.attributes.getNamedItem("role").nodeValue == "option") {
+            dropdownOpener.click();
+        }
+
+        await new Promise(resolve => setTimeout(resolve, 100)); // Wait to give it time to open
+
+        // Find not fake container
+        const dropdownOptionCont = question.getElementsByClassName(dropdownListClass);
+        console.log(dropdownOptionCont)
+        if (dropdownOptionCont.length != 1) {
+            console.warn("Couldn't find dropdown option list");
+            return;
+        }
+
+        // Find option in proper container
+        const dropdownOption = dropdownOptionCont[0].querySelector(`[data-value="${message.msg}"][role="option"]`);
+        if (!dropdownOption) {
+            console.warn("Couldn't find dropdown option");
+            return;
+        }
+
+        dropdownOption.click();
+    } else if (message.msgType == "init" && !initDone) {
+        init();
+    }
+}
+
+// Init from message
+function init() {
+    // Subcribe to onclick event for all questions
+    const questions = getQuestions();
+    console.log(questions)
+    for (let i = 0; i < questions.length; i++) {
+        const questionSpan = questions[i].getElementsByClassName(questionClass);
+
+        if (questionSpan.length != 1) {
+            console.warn("No question elements found");
+            continue;
+        } 
+
+        questionSpan[0].addEventListener("dblclick", () => {sendQuestionCallback(questions[i])});
+        console.log("Added question double click listener");
+    }
+
+    initDone = true;
+    console.log("[Solve my forms] Init done");
 }
 
 // Subscribe to messages
 browser.runtime.onMessage.addListener(onMessageCallback);
 
-// Subcribe to onclick event for all questions
-const questions = getQuestions();
-console.log(questions)
-for (let i = 0; i < questions.length; i++) {
-    const questionSpan = questions[i].getElementsByClassName(questionClass);
-
-    if (questionSpan.length != 1) {
-        console.warn("No question elements found");
-        continue;
-    } 
-
-    questionSpan[0].addEventListener("dblclick", () => {sendQuestionCallback(questions[i])});
-    console.log("Added question double click listener");
-}
-console.log("Init done")
+// Send ready message to background script (to check whitelists)
+browser.runtime.sendMessage({
+    msgType: "ready",
+    scriptName: "gforms"
+});

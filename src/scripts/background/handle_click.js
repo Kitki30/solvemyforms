@@ -16,6 +16,7 @@ export async function handleClick(message, tabId) {
     const formName = message.formName;
     const question = msg.questionText;
     const type = msg.type;
+    console.debug(msg);
 
     let questionForAI = 'Q:"' + question + '"'; // Final question format to be in prompt
 
@@ -25,6 +26,14 @@ export async function handleClick(message, tabId) {
 
         for (let i = 0; i < answers.length; i++) {
             questionForAI += "\n*" + answers[i].id + ':"' + answers[i].answerName + '"';
+        }
+    } 
+    // For dropdowns
+    else if (type == "dropdown") {
+        const answers = msg.answers;
+
+        for (let i = 0; i < answers.length; i++) {
+            questionForAI += "\n*" + answers[i].answerName + ':"' + answers[i].answerName + '"';
         }
     }
 
@@ -102,6 +111,18 @@ export async function handleClick(message, tabId) {
                     msg: response.response
                 }
             );  
+        }
+        // Dropdowns
+        else if (type == "dropdown") {
+            browser.tabs.sendMessage(
+                tabId,
+                {
+                    msgType: "select_dropdown",
+                    questionId: msg.questionId, // Question container ID
+                    openId: msg.openId, // Dropdown opener ID
+                    msg: response.response // Dropdown item name
+                }
+            );
         }
     }
     // If errored out, send error notice

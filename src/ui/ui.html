@@ -43,7 +43,7 @@
             <!--App switches-->
             <div class="settings-category-cont">
                 <h3>Master switch</h3>
-                <input type="checkbox" id="whitelist-gforms-checkbox" checked> Enable extension</input>
+                <input type="checkbox" id="master-switch-checkbox" checked> Enable extension</input>
 
                 <h3>Forms whitelist</h3>
                 <input type="checkbox" id="whitelist-gforms-checkbox" checked> Google Forms</input>
@@ -83,6 +83,25 @@
                 <div class="settings-entry-cont">
                     <h4>Gemini model settings</h4>
                     <div class="settings-sub-entry">
+                        <label for="model-overwrites-dropdown">Model:</label>
+                        <select id="model-overwrites-dropdown">
+                            <option value="auto">Auto (Default)</option>
+                            <option value="gemini-3.8-flash">Gemini 3.8 Flash</option>
+                            <option value="gemini-3.7-flash">Gemini 3.7 Flash</option>
+                            <option value="gemini-3.6-flash">Gemini 3.6 Flash</option>
+                            <option value="gemini-3.5-flash-lite">Gemini 3.5 Flash Lite</option>
+                            <option value="gemma-4-31b-it">Gemma 4 31B</option>
+                            <option value="gemma-4-26b-a4b-it">Gemma 4 26B</option>
+                        </select>
+                        <br>
+                        <label for="thinking-level-dropdown">Thinking level:</label>
+                        <select id="thinking-level-dropdown">
+                            <option value="THINKING_LEVEL_UNSPECIFIED">Default</option>
+                            <option value="LOW">Low</option>
+                            <option value="MEDIUM">Medium</option>
+                            <option value="HIGH">High</option>
+                        </select>
+                        <br>
                         <label for="model-speed-dropdown">Generation mode:</label>
                         <select id="model-speed-dropdown">
                             <option value="faster">Faster</option>
@@ -94,19 +113,15 @@
                             Smarter - Always iterates through full model list*
                             <br>
                             <span class="tip">
-                                *5 times slower, can use the same model as "Faster" option if other models not available
+                                *5 times slower, can use the same model as "Faster" option if other models not available, doesn't take effect if custom Model is selected.
                             </span>
                         </p>
                     </div>
                     <div class="settings-sub-entry">
-                        <input type="checkbox" id="model-debug-checkbox"> Use fastest model possible*</input>
-                        <br>
-                        <input type="checkbox" id="model-smarter-checkbox"> Unlock smarter models**</input>
+                        <input type="checkbox" id="model-smarter-checkbox"> Unlock smarter models*</input>
                         <p class="tip">
-                            *Use only for debug or if low on tokens, will allways use gemini-3.5-flash-lite
-                            <br>
-                            **Smarter models like gemini-3.7-flash and gemini-3.8-flash are normally not used in this extensions because they are mostly unavailable on free APIs,
-                            use it if you want slower, but smarter replies.
+                            *Smarter models like gemini-3.7-flash and gemini-3.8-flash are normally not used in this extensions because they are mostly unavailable on free APIs,
+                            use it if you want slower, but better replies.
                         </p>
                     </div>
                 </div>
